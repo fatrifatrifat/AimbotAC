@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <TlHelp32.h>
+#include <vector>
 
 namespace memory
 {
@@ -12,6 +13,7 @@ namespace memory
 
 	uintptr_t GetProcID(const wchar_t* process);
 	uintptr_t GetModuleBaseAddress(uintptr_t procID, const wchar_t* module);
+	uintptr_t FindDMAAddy(HANDLE hProc, uintptr_t ptr, std::vector<unsigned int> offsets);
 
 	template <typename T> T Read(uintptr_t address)
 	{

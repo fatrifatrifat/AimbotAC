@@ -6,7 +6,7 @@
 struct Entity
 {
 	Vec3D headPos;
-	int health;
+	DWORD health;
 	int team;
 };
 
@@ -19,46 +19,71 @@ int main()
 
 	uintptr_t localPlayer;
 
-	do {
-		localPlayer = gameModule + 0x10f4f4;
-	} while (localPlayer == NULL);
+	localPlayer = memory::Read<uintptr_t>(gameModule + 0x10f4f4);
 
 	uintptr_t maxPlayer = gameModule + 0x10f500;
 	uintptr_t entList = gameModule + 0x10f4f8;
 	uintptr_t currEntAddr;
+	
 	Entity myEnt;
 	Entity currEnt;
-	
 
-	
-		myEnt.team = memory::Read<int>(localPlayer + ac_offsets::team);
+	bool leftMouseButtonPressed = false;
 
-		maxPlayer = memory::Read<uintptr_t>(maxPlayer);
+	maxPlayer = memory::Read<uintptr_t>(maxPlayer);
+	std::cout << "MaxPlayer: " << maxPlayer << std::endl;
 
-		std::cout << maxPlayer << std::endl;
-		for (int i = 1; i <= maxPlayer; i++)
-		{
-			currEntAddr = memory::Read<uintptr_t>(entList + i * 0x4);
+	while (true)
+	{
+		
+		leftMouseButtonPressed = GetAsyncKeyState(VK_LBUTTON) & 0x8000;
 
-			if (currEntAddr == NULL)
-				continue;
+			if (leftMouseButtonPressed)
+			{
+				float distance;
+				float closestHead = FLT_MAX;
+				Vec3D closestHeadVector = { 1,2,3 };
 
-			currEnt.health = memory::Read<int>(currEntAddr + ac_offsets::health);
+				myEnt.team = memory::Read<int>(localPlayer + ac_offsets::team);
+				myEnt.health = memory::Read<DWORD>(localPlayer + ac_offsets::health);
+				myEnt.headPos = memory::Read<Vec3D>(localPlayer + ac_offsets::headPosVec);
 
-			if (currEnt.health >= 0)
-				continue;
+				for (int i = 1; i < maxPlayer; i++)
+				{
+					currEntAddr = memory::Read<uintptr_t>(entList);
+					currEntAddr = memory::Read<uintptr_t>(currEntAddr + i * 0x4);
 
-			currEnt.team = memory::Read<int>(currEntAddr + ac_offsets::team);
+					if (currEntAddr == NULL)
+						continue;
 
-			if (currEnt.team == myEnt.team)
-				continue;
+					currEnt.health = memory::Read<int>(currEntAddr + ac_offsets::health);
 
-			std::cout << "Lol" << std::endl;
-			std::cout << currEnt.health << std::endl;
+					if (currEnt.health <= 0)
+						continue;
+
+					currEnt.team = memory::Read<int>(currEntAddr + ac_offsets::team);
+
+					if (currEnt.team == myEnt.team)
+						continue;
+
+					currEnt.headPos = memory::Read<Vec3D>(currEntAddr + ac_offsets::headPosVec);
+
+					distance = myEnt.headPos.distanceCalculate(currEnt.headPos);
+
+					if (distance < closestHead)
+					{
+						closestHead = distance;
+						closestHeadVector = currEnt.headPos;
+					}
+				}
+
+				memory::Write<Vec3D>((localPlayer + ac_offsets::viewAngleVec), myEnt.headPos.relativeAngle(closestHeadVector));
+
+				Sleep(10);
+			}
+
 			
-		}
-
-	
+	}
 	
 
 }

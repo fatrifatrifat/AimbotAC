@@ -17,12 +17,27 @@ struct Vec3D
 		return { this->x - other.x, this->y - other.y, this->z - other.z };
 	}
 
-	Vec3D relativeAngle()
+	Vec3D relativeAngle(Vec3D other)
 	{
-		return{
-			std::atan2(-z, std::hypot(x, y)) * (180.0f / std::numbers::pi_v<float>),
-			std::atan2(y, x) * (180.0f / std::numbers::pi_v<float>),
-			0.0f
-		};
+		float dx = other.x - this->x;
+		float dy = other.y - this->y;
+		float dz = other.z - this->z;
+
+		float yaw = std::atan2(dy, dx) * (180.0f / std::numbers::pi);
+
+		float pitch = std::atan2(dz, std::sqrt(dx * dx + dy * dy)) * (180.0f / std::numbers::pi);
+
+		if (yaw < 0)
+			yaw += 360.0f;
+
+		return { yaw+90, pitch, 0.0f };
+	}
+
+
+	float distanceCalculate(Vec3D other)
+	{
+		float distance;
+		distance = std::sqrt(pow((other.x - this->x), 2) + pow((other.y - this->y), 2) + pow((other.z - this->z), 2));
+		return distance;
 	}
 };
