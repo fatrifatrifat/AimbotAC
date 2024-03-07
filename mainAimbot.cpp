@@ -79,7 +79,7 @@ int main()
 
 				memory::Write<Vec3D>((localPlayer + ac_offsets::viewAngleVec), myEnt.headPos.relativeAngle(closestHeadVector));
 
-				Sleep(10);
+				
 			}
 
 			
